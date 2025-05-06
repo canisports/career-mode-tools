@@ -3,8 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FC25 Career Mode Transfer Randomizer</title>
+  <title>Academy Randomizer</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Authentication checking script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+      try {
+        const response = await fetch('/api/auth/verify');
+        const data = await response.json();
+        
+        if (!response.ok || !data.authenticated) {
+          // Redirect unauthenticated users to login
+          window.location.href = '/';
+        }
+      } catch (error) {
+        console.error('Auth verification failed:', error);
+        // Redirect on error to be safe
+        window.location.href = '/';
+      }
+    });
+  </script>
   <style>
     :root {
       --main-bg-color: #0e1129;
@@ -68,13 +86,6 @@
       position: relative;
       display: inline-block;
       text-shadow: 0 0 20px rgba(78, 255, 138, 0.3);
-    }
-
-    .subtitle {
-      font-size: 16px;
-      color: var(--text-secondary);
-      letter-spacing: 1px;
-      text-transform: uppercase;
     }
 
     .slot-machine {
@@ -310,31 +321,23 @@
 <body>
   <div class="container">
     <div class="header">
-      <h1 class="title">Career Mode Transfer Randomizer</h1>
+      <h1 class="title">Academy Randomizer</h1>
     </div>
     
     <div class="slot-machine">
       <div class="slots-container">
         <div class="slot-unit">
-          <div class="slot-label">Age Group</div>
+          <div class="slot-label">Nation</div>
           <div class="slot">
-            <div class="slot-inner" id="age"></div>
+            <div class="slot-inner" id="nation"></div>
             <div class="win-flash"></div>
           </div>
         </div>
         
         <div class="slot-unit">
-          <div class="slot-label">Budget</div>
+          <div class="slot-label">Position</div>
           <div class="slot">
-            <div class="slot-inner" id="value"></div>
-            <div class="win-flash"></div>
-          </div>
-        </div>
-        
-        <div class="slot-unit">
-          <div class="slot-label">League</div>
-          <div class="slot">
-            <div class="slot-inner" id="league"></div>
+            <div class="slot-inner" id="position"></div>
             <div class="win-flash"></div>
           </div>
         </div>
@@ -348,42 +351,38 @@
 
   <script>
     // Define the options for each slot
-    const ageGroups = ["16-17", "18-19", "20-21", "22-23", "24-25"];
-    const values = [
-      "Under 5 Million",
-      "Under 10 Million",
-      "Under 20 Million",
-      "Under 35 Million",
-      "Under 50 Million",
-      "Under 75 Million",
-      "Under 100 Million",
-      "Unlimited Budget"
+    const nations = [
+      "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Argentina", "Armenia", 
+      "Australia", "Austria", "Bahrain", "Bangladesh", "Belarus", "Belgium", "Benin", 
+      "Bhutan", "Bolivia", "Bosnia & Herzegovina", "Botswana", "Brazil", "Brunei", 
+      "Bulgaria", "Burkina Faso", "Burundi", "Cambodia", "Cameroon", "Canada", 
+      "Cape Verde", "Central African Republic", "Chad", "Chile", "China", "Colombia", 
+      "Comoros", "Congo", "Costa Rica", "Croatia", "Cuba", "Curaçao", "Cyprus", 
+      "Czech Republic", "Denmark", "Djibouti", "Dominican Republic", "DR Congo", 
+      "East Timor", "Ecuador", "Egypt", "El Salvador", "England", "Equatorial Guinea", 
+      "Eritrea", "Estonia", "Eswatini", "Ethiopia", "Faroe Islands", "Fiji", "Finland", 
+      "France", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Greece", "Guatemala", 
+      "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Honduras", "Hungary", "Iceland", 
+      "India", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy", "Jamaica", 
+      "Japan", "Jordan", "Kazakhstan", "Kenya", "Kosovo", "Kuwait", "Kyrgyzstan", 
+      "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", 
+      "Lithuania", "Luxembourg", "Madagascar", "Malawi", "Malaysia", "Maldives", 
+      "Mali", "Malta", "Mauritania", "Mexico", "Moldova", "Monaco", "Mongolia", 
+      "Montenegro", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nepal", 
+      "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Korea", 
+      "North Macedonia", "Northern Ireland", "Norway", "Oman", "Pakistan", "Palestine", 
+      "Panama", "Paraguay", "Peru", "Philippines", "Poland", "Portugal", "Puerto Rico", 
+      "Qatar", "Romania", "Rwanda", "San Marino", "Saudi Arabia", "Scotland", 
+      "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", 
+      "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Korea", 
+      "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland", 
+      "Syria", "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Togo", 
+      "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Uganda", "Ukraine", 
+      "United Arab Emirates", "United States", "Uruguay", "Uzbekistan", "Vanuatu", 
+      "Venezuela", "Vietnam", "Wales", "Yemen", "Zambia", "Zimbabwe"
     ];
-    const leagues = [
-      "Premier League",
-      "EFL Championship",
-      "La Liga",
-      "La Liga 2",
-      "Bundesliga",
-      "2. Bundesliga",
-      "Serie A",
-      "Serie B",
-      "Ligue 1",
-      "Ligue 2",
-      "Eredivisie",
-      "Belgian Pro League",
-      "Liga Portugal",
-      "Swiss Super League",
-      "Austrian Bundesliga",
-      "Scottish Premiership",
-      "Super Lig",
-      "MLS",
-      "Liga MX",
-      "Saudi Pro League",
-      "Chinese Super League",
-      "K-League 1",
-      "Rest of World"
-    ];
+    
+    const positions = ["Defense", "Midfield", "Attack"];
 
     // Function to spin a single slot
     function spinSlot(elementId, options) {
@@ -416,9 +415,8 @@
       // Adjust timing for each reel for cascading effect
       let duration = 0;
       switch(elementId) {
-        case 'age': duration = 1.5; break;
-        case 'value': duration = 2.2; break;
-        case 'league': duration = 2.9; break;
+        case 'nation': duration = 2.5; break;
+        case 'position': duration = 3.0; break;
       }
       
       container.style.animation = `spin ${duration}s cubic-bezier(0.5, 0, 0.15, 1) forwards`;
@@ -432,11 +430,10 @@
       document.getElementById('spinButton').disabled = true;
       
       // Spin all slots with different timing
-      spinSlot("age", ageGroups);
-      spinSlot("value", values);
-      const leagueInfo = spinSlot("league", leagues);
+      const nationInfo = spinSlot("nation", nations);
+      const positionInfo = spinSlot("position", positions);
       
-      // Flash effect after the longest animation (league) completes
+      // Flash effect after the longest animation completes
       setTimeout(() => {
         document.querySelectorAll('.win-flash').forEach(el => {
           el.style.animation = "winFlash 0.5s ease-in-out 3";
@@ -444,15 +441,14 @@
         
         // Re-enable spin button
         document.getElementById('spinButton').disabled = false;
-      }, 3000);
+      }, 3100);
     }
 
     // Initialize slots and add event listeners when the page loads
     window.onload = function() {
       // Initialize empty slots
-      document.getElementById('age').innerHTML = '<div class="slot-value">?</div>';
-      document.getElementById('value').innerHTML = '<div class="slot-value">?</div>';
-      document.getElementById('league').innerHTML = '<div class="slot-value">?</div>';
+      document.getElementById('nation').innerHTML = '<div class="slot-value">?</div>';
+      document.getElementById('position').innerHTML = '<div class="slot-value">?</div>';
       
       // Add DIRECT click handler
       document.getElementById("spinButton").onclick = startSpin;
