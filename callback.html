@@ -80,7 +80,7 @@
     
     <div class="section">
       <h2>Token Exchange</h2>
-      <button id="test-button">Test Token Exchange</button>
+      <button id="test-button">Process Authentication</button>
       <div id="token-result"></div>
       <pre id="token-details"></pre>
     </div>
@@ -106,27 +106,33 @@
         
         if (code) {
           authCodeDiv.innerHTML = `<div class="success">Found authorization code: ${code}</div>`;
+          document.getElementById('test-button').textContent = "Process Authentication";
         } else {
           authCodeDiv.innerHTML = `<div class="error">No authorization code found in URL</div>`;
+          document.getElementById('test-button').disabled = true;
         }
       }
       
-      // Test token exchange manually
-      async function testTokenExchange() {
+      // Process authentication
+      async function processAuthentication() {
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
         const resultDiv = document.getElementById('token-result');
         const detailsDiv = document.getElementById('token-details');
+        const testButton = document.getElementById('test-button');
         
         if (!code) {
-          resultDiv.innerHTML = `<div class="error">No authorization code to test</div>`;
+          resultDiv.innerHTML = `<div class="error">No authorization code to process</div>`;
           return;
         }
         
-        resultDiv.innerHTML = `<div>Testing token exchange...</div>`;
+        // Disable button to prevent multiple attempts
+        testButton.disabled = true;
+        testButton.textContent = "Processing...";
+        resultDiv.innerHTML = `<div>Processing authentication...</div>`;
         
         try {
-          // Direct fetch to Patreon API for testing
+          // Send to our API endpoint
           const response = await fetch('/api/auth/callback', {
             method: 'POST',
             headers: {
@@ -138,14 +144,23 @@
           const data = await response.json();
           
           if (response.ok && data.authenticated) {
-            resultDiv.innerHTML = `<div class="success">Token exchange successful!</div>`;
-            window.location.href = '/dashboard.html';
+            resultDiv.innerHTML = `<div class="success">Authentication successful!</div>`;
+            detailsDiv.textContent = JSON.stringify(data, null, 2);
+            
+            // Redirect to dashboard on success
+            setTimeout(() => {
+              window.location.href = '/dashboard.html';
+            }, 2000);
           } else {
             resultDiv.innerHTML = `<div class="error">Token exchange failed</div>`;
             detailsDiv.textContent = JSON.stringify(data, null, 2);
+            testButton.disabled = false;
+            testButton.textContent = "Try Again";
           }
         } catch (error) {
           resultDiv.innerHTML = `<div class="error">Error during token exchange: ${error.message}</div>`;
+          testButton.disabled = false;
+          testButton.textContent = "Try Again";
         }
       }
       
@@ -154,16 +169,13 @@
         showUrlParams();
         showAuthCode();
         
-        document.getElementById('test-button').addEventListener('click', testTokenExchange);
+        document.getElementById('test-button').addEventListener('click', processAuthentication);
         document.getElementById('go-home').addEventListener('click', function() {
           window.location.href = '/';
         });
         
-        // Automatically test token exchange if code is present
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('code')) {
-          testTokenExchange();
-        }
+        // DO NOT automatically process on page load
+        // This allows the user to see the code first
       };
     </script>
   </div>
