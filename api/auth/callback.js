@@ -15,13 +15,21 @@ module.exports = async (req, res) => {
     return res.status(400).json({ error: 'Missing authorization code' });
   }
 
-  // Log that we received a code (for debugging)
   console.log('Received authorization code:', code);
 
   try {
     console.log('Attempting to exchange code for token...');
-    console.log('Using client ID:', process.env.PATREON_CLIENT_ID?.substring(0, 10) + '...');
-    console.log('Redirect URI:', 'https://career-mode-tools.vercel.app/callback.html');
+    
+    // Build the request parameters for Patreon
+    const params = new URLSearchParams({
+      code,
+      grant_type: 'authorization_code',
+      client_id: process.env.PATREON_CLIENT_ID,
+      client_secret: process.env.PATREON_CLIENT_SECRET,
+      redirect_uri: 'https://career-mode-tools.vercel.app/callback.html'
+    });
+    
+    console.log('Request params:', params.toString());
     
     // Exchange code for token with Patreon API
     const tokenResponse = await fetch('https://www.patreon.com/api/oauth2/token', {
@@ -29,16 +37,28 @@ module.exports = async (req, res) => {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       },
-      body: new URLSearchParams({
-        code,
-        grant_type: 'authorization_code',
-        client_id: process.env.PATREON_CLIENT_ID,
-        client_secret: process.env.PATREON_CLIENT_SECRET,
-        redirect_uri: 'redirect_uri: 'https://career-mode-tools.vercel.app/callback.html'
-      })
+      body: params
     });
-
-    const tokenData = await tokenResponse.json();
+    
+    // Log response status and headers for debugging
+    console.log('Token response status:', tokenResponse.status);
+    console.log('Token response headers:', JSON.stringify([...tokenResponse.headers.entries()]));
+    
+    // Safely get response text first
+    const responseText = await tokenResponse.text();
+    console.log('Raw response text:', responseText);
+    
+    let tokenData;
+    try {
+      // Then try to parse as JSON
+      tokenData = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error('Failed to parse response as JSON:', parseError);
+      return res.status(500).json({ 
+        error: 'Failed to parse Patreon response', 
+        rawResponse: responseText.substring(0, 500) // Limit length for security
+      });
+    }
     
     if (!tokenResponse.ok) {
       console.error('Token exchange failed:', JSON.stringify(tokenData));
@@ -60,22 +80,23 @@ module.exports = async (req, res) => {
       }
     });
 
-    const userData = await membershipResponse.json();
+    // Similarly, get raw text first then parse
+    const membershipText = await membershipResponse.text();
     
-    // Check if user is a patron
-    const isPatron = userData.data?.relationships?.memberships?.data?.length > 0;
-    
-    // For testing purposes: Allow any logged-in user to access
-    if (!isPatron) {
-      // Check if we have a user ID at all, which means authentication worked
-      if (userData.data?.id) {
-        console.log('User authenticated but is not a patron. Allowing access for testing.');
-        // Continue with authentication as if they were a patron
-      } else {
-        return res.status(403).json({ authenticated: false, error: 'Not a patron' });
-      }
+    let userData;
+    try {
+      userData = JSON.parse(membershipText);
+    } catch (parseError) {
+      console.error('Failed to parse membership response:', parseError);
+      return res.status(500).json({
+        error: 'Failed to parse membership data',
+        rawResponse: membershipText.substring(0, 500) // Limit length for security
+      });
     }
-
+    
+    // For testing: Allow any user to access
+    console.log('User data received:', JSON.stringify(userData));
+    
     // Set auth cookie (expires in 7 days)
     const authToken = tokenData.access_token;
     res.setHeader('Set-Cookie', serialize('auth_token', authToken, {
@@ -91,7 +112,7 @@ module.exports = async (req, res) => {
     console.error('Authentication error:', error);
     return res.status(500).json({ 
       error: 'Server error during authentication', 
-      details: error.message,
+      message: error.message,
       stack: error.stack
     });
   }
