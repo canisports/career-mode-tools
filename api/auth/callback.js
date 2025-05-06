@@ -103,17 +103,45 @@ module.exports = async (req, res) => {
     // For testing: Allow any user to access
     console.log('User data received:', JSON.stringify(userData).substring(0, 100) + '...');
     
-    // Set auth cookie (expires in 7 days)
-    const authToken = tokenData.access_token;
-    res.setHeader('Set-Cookie', serialize('auth_token', authToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 60 * 60 * 24 * 7,
-      path: '/',
-      sameSite: 'Lax'
-    }));
+    // Create a patreonAuthenticated flag for client-side check
+    const clientFlag = 'true';
+    
+    // Set multiple cookies for better persistence
+    
+    // 1. Auth token (HTTP-only for security)
+    res.setHeader('Set-Cookie', [
+      // Auth token - HTTP-only for security
+      serialize('auth_token', tokenData.access_token, {
+        httpOnly: true,
+        secure: true,
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+        path: '/',
+        sameSite: 'Lax'
+      }),
+      // Authenticated flag - can be read by JavaScript
+      serialize('patreonAuthenticated', clientFlag, {
+        httpOnly: false,
+        secure: true,
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+        path: '/',
+        sameSite: 'Lax'
+      }),
+      // User ID for reference
+      serialize('patreonUserId', userData.data?.id || 'unknown', {
+        httpOnly: false,
+        secure: true,
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+        path: '/',
+        sameSite: 'Lax'
+      })
+    ]);
 
-    return res.status(200).json({ authenticated: true });
+    // Also save to localStorage in case cookies don't work well
+    return res.status(200).json({ 
+      authenticated: true,
+      storeInLocalStorage: true,
+      userId: userData.data?.id || 'unknown'
+    });
   } catch (error) {
     console.error('Authentication error:', error);
     return res.status(500).json({ 
