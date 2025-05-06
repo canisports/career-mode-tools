@@ -19,6 +19,10 @@ module.exports = async (req, res) => {
   console.log('Received authorization code:', code);
 
   try {
+    console.log('Attempting to exchange code for token...');
+    console.log('Using client ID:', process.env.PATREON_CLIENT_ID?.substring(0, 10) + '...');
+    console.log('Redirect URI:', 'https://career-mode-tools.vercel.app/callback');
+    
     // Exchange code for token with Patreon API
     const tokenResponse = await fetch('https://www.patreon.com/api/oauth2/token', {
       method: 'POST',
@@ -37,10 +41,18 @@ module.exports = async (req, res) => {
     const tokenData = await tokenResponse.json();
     
     if (!tokenResponse.ok) {
-      console.error('Token exchange failed:', tokenData);
-      return res.status(400).json({ error: 'Failed to exchange code for token', details: tokenData });
+      console.error('Token exchange failed:', JSON.stringify(tokenData));
+      return res.status(400).json({ 
+        error: 'Failed to exchange code for token', 
+        details: tokenData,
+        status: tokenResponse.status,
+        statusText: tokenResponse.statusText
+      });
     }
 
+    console.log('Successfully exchanged code for token');
+    
+    // Rest of the function remains the same...
     // Get user's membership info
     const membershipResponse = await fetch('https://www.patreon.com/api/oauth2/v2/identity?include=memberships', {
       headers: {
@@ -54,10 +66,7 @@ module.exports = async (req, res) => {
     // Check if user is a patron
     const isPatron = userData.data?.relationships?.memberships?.data?.length > 0;
     
-    // For testing: Allow owner access regardless of patron status
-    const isPatreonCreator = userData.data?.id === 'YOUR_PATREON_USER_ID'; // Replace with your Patreon user ID if needed
-    
-    if (!isPatron && !isPatreonCreator) {
+    if (!isPatron) {
       return res.status(403).json({ authenticated: false, error: 'Not a patron' });
     }
 
@@ -74,6 +83,10 @@ module.exports = async (req, res) => {
     return res.status(200).json({ authenticated: true });
   } catch (error) {
     console.error('Authentication error:', error);
-    return res.status(500).json({ error: 'Server error during authentication', details: error.message });
+    return res.status(500).json({ 
+      error: 'Server error during authentication', 
+      details: error.message,
+      stack: error.stack
+    });
   }
 };
