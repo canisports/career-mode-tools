@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Debugging Patreon OAuth</title>
+  <title>Authenticating with Patreon</title>
   <style>
     body {
       font-family: 'Montserrat', sans-serif;
@@ -62,74 +62,57 @@
       border-radius: 5px;
       margin: 10px 0;
     }
+    .spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-left-color: #4eff8a;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
   <div class="debug-container">
-    <h1>Patreon OAuth Debug</h1>
+    <h1>Authenticating with Patreon</h1>
     
     <div class="section">
-      <h2>URL Parameters</h2>
-      <pre id="url-params"></pre>
+      <div id="auth-status">
+        <div class="success">Found authorization code in URL</div>
+        <div class="spinner"></div>
+        <p>Please wait while we verify your membership...</p>
+      </div>
     </div>
     
-    <div class="section">
-      <h2>Auth Code</h2>
-      <div id="auth-code"></div>
+    <div class="section" id="error-section" style="display: none;">
+      <h2>Authentication Error</h2>
+      <div id="error-message" class="error"></div>
+      <pre id="error-details"></pre>
+      <button id="try-again">Try Again</button>
     </div>
     
-    <div class="section">
-      <h2>Token Exchange</h2>
-      <button id="test-button">Process Authentication</button>
-      <div id="token-result"></div>
-      <pre id="token-details"></pre>
-    </div>
-    
-    <button id="go-home">Return to Login</button>
+    <button id="go-home" style="display: none;">Return to Login</button>
     
     <script>
-      // Display URL parameters
-      function showUrlParams() {
-        const urlParams = new URLSearchParams(window.location.search);
-        let output = '';
-        for(const [key, value] of urlParams.entries()) {
-          output += `${key}: ${value}\n`;
-        }
-        document.getElementById('url-params').textContent = output || 'No parameters found';
-      }
-      
-      // Display auth code if present
-      function showAuthCode() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const code = urlParams.get('code');
-        const authCodeDiv = document.getElementById('auth-code');
-        
-        if (code) {
-          authCodeDiv.innerHTML = `<div class="success">Found authorization code: ${code}</div>`;
-          document.getElementById('test-button').textContent = "Process Authentication";
-        } else {
-          authCodeDiv.innerHTML = `<div class="error">No authorization code found in URL</div>`;
-          document.getElementById('test-button').disabled = true;
-        }
-      }
-      
-      // Process authentication
+      // Process authentication automatically
       async function processAuthentication() {
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
-        const resultDiv = document.getElementById('token-result');
-        const detailsDiv = document.getElementById('token-details');
-        const testButton = document.getElementById('test-button');
+        const authStatus = document.getElementById('auth-status');
+        const errorSection = document.getElementById('error-section');
+        const errorMessage = document.getElementById('error-message');
+        const errorDetails = document.getElementById('error-details');
+        const goHomeButton = document.getElementById('go-home');
         
         if (!code) {
-          resultDiv.innerHTML = `<div class="error">No authorization code to process</div>`;
+          authStatus.innerHTML = `<div class="error">No authorization code found in URL</div>`;
+          goHomeButton.style.display = 'block';
           return;
         }
-        
-        // Disable button to prevent multiple attempts
-        testButton.disabled = true;
-        testButton.textContent = "Processing...";
-        resultDiv.innerHTML = `<div>Processing authentication...</div>`;
         
         try {
           // Send to our API endpoint
@@ -144,38 +127,55 @@
           const data = await response.json();
           
           if (response.ok && data.authenticated) {
-            resultDiv.innerHTML = `<div class="success">Authentication successful!</div>`;
-            detailsDiv.textContent = JSON.stringify(data, null, 2);
+            // Also store in localStorage as a backup
+            if (data.storeInLocalStorage) {
+              localStorage.setItem('patreonAuthenticated', 'true');
+              if (data.userId) {
+                localStorage.setItem('patreonUserId', data.userId);
+              }
+            }
             
-            // Redirect to dashboard on success
+            // Success! Redirect to dashboard
+            authStatus.innerHTML = `<div class="success">Authentication successful! Redirecting...</div>`;
+            
+            // Redirect after a short delay
             setTimeout(() => {
               window.location.href = '/dashboard.html';
-            }, 2000);
+            }, 1500);
           } else {
-            resultDiv.innerHTML = `<div class="error">Token exchange failed</div>`;
-            detailsDiv.textContent = JSON.stringify(data, null, 2);
-            testButton.disabled = false;
-            testButton.textContent = "Try Again";
+            // Show error information
+            authStatus.style.display = 'none';
+            errorSection.style.display = 'block';
+            goHomeButton.style.display = 'block';
+            
+            errorMessage.textContent = data.error || 'Authentication failed';
+            if (data.details) {
+              errorDetails.textContent = JSON.stringify(data.details, null, 2);
+            }
           }
         } catch (error) {
-          resultDiv.innerHTML = `<div class="error">Error during token exchange: ${error.message}</div>`;
-          testButton.disabled = false;
-          testButton.textContent = "Try Again";
+          // Show error information
+          authStatus.style.display = 'none';
+          errorSection.style.display = 'block';
+          goHomeButton.style.display = 'block';
+          
+          errorMessage.textContent = `Error during authentication: ${error.message}`;
         }
       }
       
       // Initialize the page
       window.onload = function() {
-        showUrlParams();
-        showAuthCode();
+        // Process authentication automatically
+        processAuthentication();
         
-        document.getElementById('test-button').addEventListener('click', processAuthentication);
+        // Set up event listeners
         document.getElementById('go-home').addEventListener('click', function() {
           window.location.href = '/';
         });
         
-        // DO NOT automatically process on page load
-        // This allows the user to see the code first
+        document.getElementById('try-again').addEventListener('click', function() {
+          window.location.href = '/';
+        });
       };
     </script>
   </div>
