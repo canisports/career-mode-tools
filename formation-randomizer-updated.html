@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FC25 Formation Randomizer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Authentication checking script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+      try {
+        const response = await fetch('/api/auth/verify');
+        const data = await response.json();
+        
+        if (!response.ok || !data.authenticated) {
+          // Redirect unauthenticated users to login
+          window.location.href = '/';
+        }
+      } catch (error) {
+        console.error('Auth verification failed:', error);
+        // Redirect on error to be safe
+        window.location.href = '/';
+      }
+    });
+  </script>
+  <style>
+    :root {
+      --main-bg-color: #0e1129;
+      --secondary-bg: #1a203c;
+      --accent-color: #4eff8a;
+      --accent-glow: rgba(78, 255, 138, 0.4);
+      --text-color: #ffffff;
+      --text-secondary: #9fadc2;
+      --slot-bg: #0c1024;
+      --slot-border: #29335c;
+      --slot-highlight: #4eff8a;
+      --card-bg: #1e254a;
+      --card-border: #29335c;
+      --button-bg: linear-gradient(135deg, #4eff8a, #00a5ff);
+      --button-shadow: 0 10px 20px rgba(78, 255, 138, 0.3);
+      --dark-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background-color: var(--main-bg-color);
+      background-image: 
+        radial-gradient(circle at 20% 30%, rgba(41, 51, 92, 0.4) 0%, transparent 400px),
+        radial-gradient(circle at 80% 70%, rgba(78, 255, 138, 0.1) 0%, transparent 400px);
+      color: var(--text-color);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 600px;
+      position: relative;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .title {
+      font-size: 44px;
+      font-weight: 800;
+      background: linear-gradient(to right, #4eff8a, #00a5ff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+      position: relative;
+      display: inline-block;
+      text-shadow: 0 0 20px rgba(78, 255, 138, 0.3);
+    }
+
+    .subtitle {
+      font-size: 16px;
+      color: var(--text-secondary);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .slot-machine {
+      background-color: var(--secondary-bg);
+      border-radius: 20px;
+      box-shadow: var(--dark-shadow);
+      padding: 30px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--card-border);
+    }
+
+    .slot-machine::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      right: -50%;
+      bottom: -50%;
+      background: linear-gradient(45deg, 
+        rgba(78, 255, 138, 0) 45%, 
+        rgba(78, 255, 138, 0.1) 50%, 
+        rgba(78, 255, 138, 0) 55%);
+      z-index: 1;
+      animation: shine 5s infinite;
+      pointer-events: none;
+    }
+
+    @keyframes shine {
+      0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+      100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+    }
+
+    .slot-container {
+      margin: 30px auto;
+      max-width: 280px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .slot-label {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--accent-color);
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 15px;
+      text-shadow: 0 0 10px rgba(78, 255, 138, 0.5);
+    }
+
+    .slot {
+      background-color: var(--slot-bg);
+      border: 2px solid var(--slot-border);
+      border-radius: 15px;
+      height: 140px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3), inset 0 0 15px rgba(0, 0, 0, 0.5);
+    }
+
+    .slot::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 30px;
+      background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), transparent);
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    .slot::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 30px;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.5), transparent);
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    .slot-inner {
+      position: absolute;
+      width: 100%;
+      top: -2400px;
+      animation: none;
+    }
+
+    .slot-value {
+      height: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 24px;
+      text-align: center;
+      padding: 0 20px;
+      text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .slot-value:nth-child(odd) {
+      background-color: rgba(41, 51, 92, 0.3);
+    }
+
+    @keyframes spin {
+      0% { top: -2400px; }
+      100% { top: 0; }
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      margin-top: 30px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .spin-button {
+      background: var(--button-bg);
+      color: var(--main-bg-color);
+      font-size: 18px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 16px 40px;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: var(--button-shadow);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .spin-button:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 30px rgba(78, 255, 138, 0.4);
+    }
+
+    .spin-button:active {
+      transform: translateY(0);
+      box-shadow: 0 5px 15px rgba(78, 255, 138, 0.3);
+    }
+
+    .spin-button::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.3) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      transform: rotate(45deg);
+      animation: shimmer 3s infinite;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .spin-button span {
+      position: relative;
+      z-index: 2;
+    }
+
+    @keyframes shimmer {
+      0% { top: -150%; left: -150%; }
+      100% { top: 150%; left: 150%; }
+    }
+
+    .win-flash {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(78, 255, 138, 0);
+      pointer-events: none;
+      z-index: 10;
+      border-radius: 15px;
+    }
+
+    @keyframes winFlash {
+      0%, 100% { background: rgba(78, 255, 138, 0); box-shadow: none; }
+      50% { background: rgba(78, 255, 138, 0.2); box-shadow: 0 0 30px var(--accent-glow); }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .title {
+        font-size: 32px;
+      }
+      
+      .slot-value {
+        font-size: 20px;
+      }
+      
+      .spin-button {
+        font-size: 16px;
+        padding: 12px 30px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 class="title">FC25 SLOT MACHINE</h1>
+      <div class="subtitle">FORMATION RANDOMIZER</div>
+    </div>
+    
+    <div class="slot-machine">
+      <div class="slot-container">
+        <div class="slot-label">FORMATION</div>
+        <div class="slot">
+          <div class="slot-inner" id="formation"></div>
+          <div class="win-flash"></div>
+        </div>
+      </div>
+      
+      <div class="controls">
+        <button class="spin-button" id="spinButton"><span>SPIN</span></button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Define the options for formations
+    const formations = [
+      "3-4-3",
+      "3-5-2",
+      "4-1-2-1-2",
+      "4-2-3-1",
+      "4-2-2-2",
+      "4-3-3",
+      "4-3-3 (2)",
+      "4-3-3 (3)",
+      "4-3-2-1",
+      "4-4-2",
+      "4-4-2 (2)",
+      "4-5-1",
+      "4-5-1 (2)",
+      "5-2-1-2",
+      "5-3-2",
+      "5-4-1"
+    ];
+
+    // Function to spin the slot
+    function spinSlot() {
+      const container = document.getElementById("formation");
+      container.innerHTML = '';
+      const values = [];
+      
+      // Generate random values with more repeats for visual effect
+      for (let i = 0; i < 30; i++) {
+        values.push(formations[Math.floor(Math.random() * formations.length)]);
+      }
+      
+      // The final result
+      const result = formations[Math.floor(Math.random() * formations.length)];
+      values.push(result);
+
+      // Create slot items
+      values.forEach(option => {
+        const div = document.createElement('div');
+        div.className = 'slot-value';
+        div.textContent = option;
+        container.appendChild(div);
+      });
+
+      // Reset and start animation
+      container.style.animation = 'none';
+      void container.offsetWidth; // Force reflow
+      container.style.top = '-2400px';
+      
+      // Set animation duration
+      const duration = 2;
+      container.style.animation = `spin ${duration}s cubic-bezier(0.5, 0, 0.15, 1) forwards`;
+      
+      // Flash effect after the animation completes
+      setTimeout(() => {
+        document.querySelector('.win-flash').style.animation = "winFlash 0.5s ease-in-out 3";
+      }, duration * 1000 + 100);
+    }
+
+    // When the page loads, set up event listeners
+    window.onload = function() {
+      // Initialize empty slot
+      document.getElementById('formation').innerHTML = '<div class="slot-value">?</div>';
+      
+      // Add click handler for spin button
+      document.getElementById("spinButton").onclick = spinSlot;
+      
+      // Reset animation when it ends
+      document.querySelector('.win-flash').addEventListener('animationend', function() {
+        this.style.animation = 'none';
+      });
+    };
+  </script>
+</body>
+</html>
