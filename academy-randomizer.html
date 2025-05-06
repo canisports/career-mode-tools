@@ -402,4 +402,91 @@
       "Qatar", "Romania", "Rwanda", "San Marino", "Saudi Arabia", "Scotland", 
       "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", 
       "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Korea", 
-      "South Sudan", "Spain", "
+      "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland", 
+      "Syria", "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Togo", 
+      "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Uganda", "Ukraine", 
+      "United Arab Emirates", "United States", "Uruguay", "Uzbekistan", "Vanuatu", 
+      "Venezuela", "Vietnam", "Wales", "Yemen", "Zambia", "Zimbabwe"
+    ];
+    
+    const positions = ["Defense", "Midfield", "Attack"];
+
+    // Function to spin a single slot
+    function spinSlot(elementId, options) {
+      const container = document.getElementById(elementId);
+      container.innerHTML = '';
+      const values = [];
+      
+      // Generate random values with more repeats for visual effect
+      for (let i = 0; i < 30; i++) {
+        values.push(options[Math.floor(Math.random() * options.length)]);
+      }
+      
+      // The final result
+      const result = options[Math.floor(Math.random() * options.length)];
+      values.push(result);
+
+      // Create slot items
+      values.forEach(option => {
+        const div = document.createElement('div');
+        div.className = 'slot-value';
+        div.textContent = option;
+        container.appendChild(div);
+      });
+
+      // Reset and start animation
+      container.style.animation = 'none';
+      void container.offsetWidth; // Force reflow
+      container.style.top = '-2400px';
+      
+      // Adjust timing for each reel for cascading effect
+      let duration = 0;
+      switch(elementId) {
+        case 'nation': duration = 2.5; break;
+        case 'position': duration = 3.0; break;
+      }
+      
+      container.style.animation = `spin ${duration}s cubic-bezier(0.5, 0, 0.15, 1) forwards`;
+      
+      return { duration, result };
+    }
+
+    // Main function to start the spin
+    function startSpin() {
+      // Disable spin button
+      document.getElementById('spinButton').disabled = true;
+      
+      // Spin all slots with different timing
+      const nationInfo = spinSlot("nation", nations);
+      const positionInfo = spinSlot("position", positions);
+      
+      // Flash effect after the longest animation completes
+      setTimeout(() => {
+        document.querySelectorAll('.win-flash').forEach(el => {
+          el.style.animation = "winFlash 0.5s ease-in-out 3";
+        });
+        
+        // Re-enable spin button
+        document.getElementById('spinButton').disabled = false;
+      }, 3100);
+    }
+
+    // Initialize slots and add event listeners when the page loads
+    window.onload = function() {
+      // Initialize empty slots
+      document.getElementById('nation').innerHTML = '<div class="slot-value">?</div>';
+      document.getElementById('position').innerHTML = '<div class="slot-value">?</div>';
+      
+      // Add DIRECT click handler
+      document.getElementById("spinButton").onclick = startSpin;
+      
+      // Reset animations when they end
+      document.querySelectorAll('.win-flash').forEach(el => {
+        el.addEventListener('animationend', function() {
+          this.style.animation = 'none';
+        });
+      });
+    };
+  </script>
+</body>
+</html>
