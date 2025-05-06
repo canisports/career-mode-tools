@@ -15,6 +15,9 @@ module.exports = async (req, res) => {
     return res.status(400).json({ error: 'Missing authorization code' });
   }
 
+  // Log that we received a code (for debugging)
+  console.log('Received authorization code:', code);
+
   try {
     // Exchange code for token with Patreon API
     const tokenResponse = await fetch('https://www.patreon.com/api/oauth2/token', {
@@ -35,7 +38,7 @@ module.exports = async (req, res) => {
     
     if (!tokenResponse.ok) {
       console.error('Token exchange failed:', tokenData);
-      return res.status(400).json({ error: 'Failed to exchange code for token' });
+      return res.status(400).json({ error: 'Failed to exchange code for token', details: tokenData });
     }
 
     // Get user's membership info
@@ -51,7 +54,10 @@ module.exports = async (req, res) => {
     // Check if user is a patron
     const isPatron = userData.data?.relationships?.memberships?.data?.length > 0;
     
-    if (!isPatron) {
+    // For testing: Allow owner access regardless of patron status
+    const isPatreonCreator = userData.data?.id === 'YOUR_PATREON_USER_ID'; // Replace with your Patreon user ID if needed
+    
+    if (!isPatron && !isPatreonCreator) {
       return res.status(403).json({ authenticated: false, error: 'Not a patron' });
     }
 
@@ -61,12 +67,13 @@ module.exports = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 60 * 60 * 24 * 7,
-      path: '/'
+      path: '/',
+      sameSite: 'Lax'
     }));
 
     return res.status(200).json({ authenticated: true });
   } catch (error) {
     console.error('Authentication error:', error);
-    return res.status(500).json({ error: 'Server error during authentication' });
+    return res.status(500).json({ error: 'Server error during authentication', details: error.message });
   }
 };
