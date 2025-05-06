@@ -5,24 +5,52 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FC25 Formation Randomizer</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <!-- Authentication checking script -->
-  <script>
-    document.addEventListener('DOMContentLoaded', async function() {
-      try {
-        const response = await fetch('/api/auth/verify');
-        const data = await response.json();
-        
-        if (!response.ok || !data.authenticated) {
-          // Redirect unauthenticated users to login
-          window.location.href = '/';
-        }
-      } catch (error) {
-        console.error('Auth verification failed:', error);
-        // Redirect on error to be safe
+ // Authentication checking script - Add this to the <head> section of all tool pages
+<script>
+  // Check authentication status when page loads
+  document.addEventListener('DOMContentLoaded', function() {
+    // Try to read from cookies first
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+      return null;
+    }
+    
+    // Check if user is authenticated via cookie or localStorage
+    const cookieAuth = getCookie('patreonAuthenticated');
+    const localStorageAuth = localStorage.getItem('patreonAuthenticated');
+    
+    console.log('Cookie auth:', cookieAuth);
+    console.log('LocalStorage auth:', localStorageAuth);
+    
+    // If not authenticated through either method, try API verification
+    if (cookieAuth !== 'true' && localStorageAuth !== 'true') {
+      verifyWithApi();
+    }
+  });
+  
+  // Fallback to API verification if needed
+  async function verifyWithApi() {
+    try {
+      const response = await fetch('/api/auth/verify');
+      const data = await response.json();
+      
+      if (!response.ok || !data.authenticated) {
+        // Redirect unauthenticated users to login
         window.location.href = '/';
+      } else {
+        // If API verification succeeds but cookies/localStorage failed,
+        // store the authentication in localStorage for future checks
+        localStorage.setItem('patreonAuthenticated', 'true');
       }
-    });
-  </script>
+    } catch (error) {
+      console.error('Auth verification failed:', error);
+      // Redirect on error to be safe
+      window.location.href = '/';
+    }
+  }
+</script>
   <style>
     :root {
       --main-bg-color: #0e1129;
