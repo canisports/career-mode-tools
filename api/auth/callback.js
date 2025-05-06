@@ -20,21 +20,27 @@ module.exports = async (req, res) => {
   try {
     console.log('Attempting to exchange code for token...');
     
+    // Get credentials from environment variables
+    const clientId = process.env.PATREON_CLIENT_ID;
+    const clientSecret = process.env.PATREON_CLIENT_SECRET;
+    
+    // Create HTTP Basic Auth header
+    const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+    
     // Build the request parameters for Patreon
     const params = new URLSearchParams({
       code,
       grant_type: 'authorization_code',
-      client_id: process.env.PATREON_CLIENT_ID,
-      client_secret: process.env.PATREON_CLIENT_SECRET,
       redirect_uri: 'https://career-mode-tools.vercel.app/callback.html'
     });
     
     console.log('Request params:', params.toString());
     
-    // Exchange code for token with Patreon API
+    // Exchange code for token with Patreon API using Basic Auth
     const tokenResponse = await fetch('https://www.patreon.com/api/oauth2/token', {
       method: 'POST',
       headers: {
+        'Authorization': `Basic ${credentials}`,
         'Content-Type': 'application/x-www-form-urlencoded'
       },
       body: params
@@ -42,11 +48,10 @@ module.exports = async (req, res) => {
     
     // Log response status and headers for debugging
     console.log('Token response status:', tokenResponse.status);
-    console.log('Token response headers:', JSON.stringify([...tokenResponse.headers.entries()]));
     
     // Safely get response text first
     const responseText = await tokenResponse.text();
-    console.log('Raw response text:', responseText);
+    console.log('Raw response text (truncated):', responseText.substring(0, 100));
     
     let tokenData;
     try {
@@ -71,6 +76,7 @@ module.exports = async (req, res) => {
     }
 
     console.log('Successfully exchanged code for token');
+    console.log('Access token received (truncated):', tokenData.access_token.substring(0, 10) + '...');
     
     // Get user's membership info
     const membershipResponse = await fetch('https://www.patreon.com/api/oauth2/v2/identity?include=memberships', {
@@ -95,7 +101,7 @@ module.exports = async (req, res) => {
     }
     
     // For testing: Allow any user to access
-    console.log('User data received:', JSON.stringify(userData));
+    console.log('User data received:', JSON.stringify(userData).substring(0, 100) + '...');
     
     // Set auth cookie (expires in 7 days)
     const authToken = tokenData.access_token;
