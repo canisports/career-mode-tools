@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Authenticating...</title>
+  <title>Debugging Patreon OAuth</title>
   <style>
     body {
       font-family: 'Montserrat', sans-serif;
@@ -12,105 +12,160 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
       margin: 0;
       padding: 20px;
     }
-    .container {
+    .debug-container {
       background-color: #1a203c;
       border-radius: 10px;
-      padding: 30px;
-      max-width: 500px;
+      padding: 20px;
+      max-width: 800px;
       width: 100%;
-      text-align: center;
     }
     h1 {
       color: #4eff8a;
-      margin-bottom: 20px;
+      text-align: center;
     }
-    .spinner {
-      border: 4px solid rgba(0, 0, 0, 0.1);
-      border-left-color: #4eff8a;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-      margin: 20px auto;
+    pre {
+      background-color: #0c1024;
+      padding: 10px;
+      border-radius: 5px;
+      overflow: auto;
+      white-space: pre-wrap;
+      margin-top: 20px;
     }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    .section {
+      margin-bottom: 30px;
     }
-    .message {
-      margin: 20px 0;
+    button {
+      background: linear-gradient(135deg, #4eff8a, #00a5ff);
+      color: #0e1129;
+      font-weight: bold;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 20px;
     }
     .error {
       color: #ff424d;
-      margin: 20px 0;
-      padding: 10px;
       background-color: rgba(255, 66, 77, 0.1);
+      padding: 10px;
       border-radius: 5px;
+      margin: 10px 0;
+    }
+    .success {
+      color: #4eff8a;
+      background-color: rgba(78, 255, 138, 0.1);
+      padding: 10px;
+      border-radius: 5px;
+      margin: 10px 0;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Authenticating with Patreon</h1>
-    <div class="spinner"></div>
-    <p class="message">Please wait while we verify your membership.</p>
-    <div id="status"></div>
-  </div>
-  
-  <script>
-    async function processAuthentication() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const code = urlParams.get('code');
-      const statusDiv = document.getElementById('status');
-      
-      if (!code) {
-        statusDiv.innerHTML = '<div class="error">No authorization code found. Please try logging in again.</div>';
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 3000);
-        return;
+  <div class="debug-container">
+    <h1>Patreon OAuth Debug</h1>
+    
+    <div class="section">
+      <h2>URL Parameters</h2>
+      <pre id="url-params"></pre>
+    </div>
+    
+    <div class="section">
+      <h2>Auth Code</h2>
+      <div id="auth-code"></div>
+    </div>
+    
+    <div class="section">
+      <h2>Token Exchange</h2>
+      <button id="test-button">Test Token Exchange</button>
+      <div id="token-result"></div>
+      <pre id="token-details"></pre>
+    </div>
+    
+    <button id="go-home">Return to Login</button>
+    
+    <script>
+      // Display URL parameters
+      function showUrlParams() {
+        const urlParams = new URLSearchParams(window.location.search);
+        let output = '';
+        for(const [key, value] of urlParams.entries()) {
+          output += `${key}: ${value}\n`;
+        }
+        document.getElementById('url-params').textContent = output || 'No parameters found';
       }
       
-      try {
-        // Send code to your API endpoint
-        const response = await fetch('/api/auth/callback', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ code })
+      // Display auth code if present
+      function showAuthCode() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const authCodeDiv = document.getElementById('auth-code');
+        
+        if (code) {
+          authCodeDiv.innerHTML = `<div class="success">Found authorization code: ${code}</div>`;
+        } else {
+          authCodeDiv.innerHTML = `<div class="error">No authorization code found in URL</div>`;
+        }
+      }
+      
+      // Test token exchange manually
+      async function testTokenExchange() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const resultDiv = document.getElementById('token-result');
+        const detailsDiv = document.getElementById('token-details');
+        
+        if (!code) {
+          resultDiv.innerHTML = `<div class="error">No authorization code to test</div>`;
+          return;
+        }
+        
+        resultDiv.innerHTML = `<div>Testing token exchange...</div>`;
+        
+        try {
+          // Direct fetch to Patreon API for testing
+          const response = await fetch('/api/auth/callback', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ code })
+          });
+          
+          const data = await response.json();
+          
+          if (response.ok && data.authenticated) {
+            resultDiv.innerHTML = `<div class="success">Token exchange successful!</div>`;
+            window.location.href = '/dashboard.html';
+          } else {
+            resultDiv.innerHTML = `<div class="error">Token exchange failed</div>`;
+            detailsDiv.textContent = JSON.stringify(data, null, 2);
+          }
+        } catch (error) {
+          resultDiv.innerHTML = `<div class="error">Error during token exchange: ${error.message}</div>`;
+        }
+      }
+      
+      // Initialize the page
+      window.onload = function() {
+        showUrlParams();
+        showAuthCode();
+        
+        document.getElementById('test-button').addEventListener('click', testTokenExchange);
+        document.getElementById('go-home').addEventListener('click', function() {
+          window.location.href = '/';
         });
         
-        const data = await response.json();
-        
-        if (response.ok && data.authenticated) {
-          statusDiv.innerHTML = '<p class="message">Authentication successful! Redirecting...</p>';
-          // Redirect to dashboard on success
-          setTimeout(() => {
-            window.location.href = '/dashboard.html';
-          }, 1000);
-        } else {
-          // Authentication failed
-          const errorMessage = data.error || 'Authentication failed';
-          statusDiv.innerHTML = `<div class="error">${errorMessage}. Redirecting to login...</div>`;
-          setTimeout(() => {
-            window.location.href = '/?error=auth_failed';
-          }, 3000);
+        // Automatically test token exchange if code is present
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('code')) {
+          testTokenExchange();
         }
-      } catch (error) {
-        console.error('Error during authentication:', error);
-        statusDiv.innerHTML = '<div class="error">Server error during authentication. Please try again later.</div>';
-        setTimeout(() => {
-          window.location.href = '/?error=server_error';
-        }, 3000);
-      }
-    }
-    
-    // Run when page loads
-    window.onload = processAuthentication;
-  </script>
+      };
+    </script>
+  </div>
 </body>
 </html>
