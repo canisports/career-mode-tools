@@ -34,7 +34,7 @@ module.exports = async (req, res) => {
         grant_type: 'authorization_code',
         client_id: process.env.PATREON_CLIENT_ID,
         client_secret: process.env.PATREON_CLIENT_SECRET,
-        redirect_uri: 'https://career-mode-tools.vercel.app/callback.html'
+        redirect_uri: 'redirect_uri: 'https://career-mode-tools.vercel.app/callback.html'
       })
     });
 
