@@ -210,6 +210,25 @@
       }
     }
   </style>
+  
+  <!-- Authentication checking script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+      try {
+        const response = await fetch('/api/auth/verify');
+        const data = await response.json();
+        
+        if (!response.ok || !data.authenticated) {
+          // Redirect unauthenticated users to login
+          window.location.href = '/';
+        }
+      } catch (error) {
+        console.error('Auth verification failed:', error);
+        // Redirect on error to be safe
+        window.location.href = '/';
+      }
+    });
+  </script>
 </head>
 <body>
   <div class="container">
