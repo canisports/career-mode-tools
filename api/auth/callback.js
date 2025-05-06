@@ -21,7 +21,7 @@ module.exports = async (req, res) => {
   try {
     console.log('Attempting to exchange code for token...');
     console.log('Using client ID:', process.env.PATREON_CLIENT_ID?.substring(0, 10) + '...');
-    console.log('Redirect URI:', 'https://career-mode-tools.vercel.app/callback');
+    console.log('Redirect URI:', 'https://career-mode-tools.vercel.app/callback.html');
     
     // Exchange code for token with Patreon API
     const tokenResponse = await fetch('https://www.patreon.com/api/oauth2/token', {
@@ -34,7 +34,7 @@ module.exports = async (req, res) => {
         grant_type: 'authorization_code',
         client_id: process.env.PATREON_CLIENT_ID,
         client_secret: process.env.PATREON_CLIENT_SECRET,
-        redirect_uri: 'https://career-mode-tools.vercel.app/callback'
+        redirect_uri: 'https://career-mode-tools.vercel.app/callback.html'
       })
     });
 
@@ -52,7 +52,6 @@ module.exports = async (req, res) => {
 
     console.log('Successfully exchanged code for token');
     
-    // Rest of the function remains the same...
     // Get user's membership info
     const membershipResponse = await fetch('https://www.patreon.com/api/oauth2/v2/identity?include=memberships', {
       headers: {
@@ -66,8 +65,15 @@ module.exports = async (req, res) => {
     // Check if user is a patron
     const isPatron = userData.data?.relationships?.memberships?.data?.length > 0;
     
+    // For testing purposes: Allow any logged-in user to access
     if (!isPatron) {
-      return res.status(403).json({ authenticated: false, error: 'Not a patron' });
+      // Check if we have a user ID at all, which means authentication worked
+      if (userData.data?.id) {
+        console.log('User authenticated but is not a patron. Allowing access for testing.');
+        // Continue with authentication as if they were a patron
+      } else {
+        return res.status(403).json({ authenticated: false, error: 'Not a patron' });
+      }
     }
 
     // Set auth cookie (expires in 7 days)
