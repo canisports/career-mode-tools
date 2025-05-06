@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Career Mode Tools - Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --main-bg-color: #0e1129;
+      --secondary-bg: #1a203c;
+      --accent-color: #4eff8a;
+      --accent-glow: rgba(78, 255, 138, 0.4);
+      --text-color: #ffffff;
+      --text-secondary: #9fadc2;
+      --card-bg: #1e254a;
+      --card-border: #29335c;
+      --button-bg: linear-gradient(135deg, #4eff8a, #00a5ff);
+      --button-shadow: 0 10px 20px rgba(78, 255, 138, 0.3);
+      --dark-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      --patreon-color: #ff424d;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background-color: var(--main-bg-color);
+      background-image: 
+        radial-gradient(circle at 20% 30%, rgba(41, 51, 92, 0.4) 0%, transparent 400px),
+        radial-gradient(circle at 80% 70%, rgba(78, 255, 138, 0.1) 0%, transparent 400px);
+      color: var(--text-color);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 500px;
+      background-color: var(--secondary-bg);
+      border-radius: 20px;
+      box-shadow: var(--dark-shadow);
+      padding: 40px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--card-border);
+    }
+
+    .login-container::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      right: -50%;
+      bottom: -50%;
+      background: linear-gradient(45deg, 
+        rgba(78, 255, 138, 0) 45%, 
+        rgba(78, 255, 138, 0.1) 50%, 
+        rgba(78, 255, 138, 0) 55%);
+      z-index: 1;
+      animation: shine 5s infinite;
+      pointer-events: none;
+    }
+
+    @keyframes shine {
+      0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+      100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+    }
+
+    .title {
+      font-size: 32px;
+      font-weight: 800;
+      background: linear-gradient(to right, #4eff8a, #00a5ff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 20px;
+      position: relative;
+      display: inline-block;
+      text-shadow: 0 0 20px rgba(78, 255, 138, 0.3);
+      z-index: 2;
+    }
+
+    .description {
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      margin-bottom: 30px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .login-button {
+      background-color: var(--patreon-color);
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 16px 30px;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 10px 20px rgba(255, 66, 77, 0.3);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+      text-decoration: none;
+      z-index: 2;
+    }
+
+    .login-button:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 30px rgba(255, 66, 77, 0.4);
+    }
+
+    .login-button:active {
+      transform: translateY(0);
+      box-shadow: 0 5px 15px rgba(255, 66, 77, 0.3);
+    }
+
+    .login-button::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.3) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      transform: rotate(45deg);
+      animation: shimmer 3s infinite;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    @keyframes shimmer {
+      0% { top: -150%; left: -150%; }
+      100% { top: 150%; left: 150%; }
+    }
+
+    .button-text {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .patreon-logo {
+      width: 20px;
+      height: 20px;
+      margin-right: 5px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .login-container {
+        padding: 30px 20px;
+      }
+      
+      .title {
+        font-size: 24px;
+      }
+      
+      .description {
+        font-size: 14px;
+      }
+      
+      .login-button {
+        font-size: 14px;
+        padding: 14px 25px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h1 class="title">Career Mode Tools</h1>
+    <p class="description">Access exclusive Career Mode randomizers and tools to enhance your gaming experience. These tools are available exclusively to Patreon supporters.</p>
+    
+    <a href="https://www.patreon.com/oauth2/authorize?response_type=code&client_id=MLI_vPPd-j_mSmOWRyFccmyWxnfBEofm-1F3I2KpECegq3pARRhFR_sYC01a7yx4&redirect_uri=https://career-mode-tools.vercel.app/callback&scope=identity%20identity.memberships" class="login-button">
+      <span class="button-text">
+        <span>🔐</span>
+        <span>Login with Patreon</span>
+      </span>
+    </a>
+  </div>
+
+  <script>
+    // Check if user is already authenticated
+    function checkAuth() {
+      // This is where you'd check for an existing auth token/cookie
+      // If authenticated, redirect to main page
+      const isAuthenticated = localStorage.getItem('patreonAuthenticated');
+      if (isAuthenticated === 'true') {
+        window.location.href = 'index.html';
+      }
+    }
+    
+    // Run check when page loads
+    window.onload = checkAuth;
+  </script>
+</body>
+</html>
