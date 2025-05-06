@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FC25 Randomizers</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --main-bg-color: #0e1129;
+      --secondary-bg: #1a203c;
+      --accent-color: #4eff8a;
+      --accent-glow: rgba(78, 255, 138, 0.4);
+      --text-color: #ffffff;
+      --text-secondary: #9fadc2;
+      --card-bg: #1e254a;
+      --card-border: #29335c;
+      --button-bg: linear-gradient(135deg, #4eff8a, #00a5ff);
+      --button-shadow: 0 10px 20px rgba(78, 255, 138, 0.3);
+      --dark-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background-color: var(--main-bg-color);
+      background-image: 
+        radial-gradient(circle at 20% 30%, rgba(41, 51, 92, 0.4) 0%, transparent 400px),
+        radial-gradient(circle at 80% 70%, rgba(78, 255, 138, 0.1) 0%, transparent 400px);
+      color: var(--text-color);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1000px;
+      position: relative;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .title {
+      font-size: 44px;
+      font-weight: 800;
+      background: linear-gradient(to right, #4eff8a, #00a5ff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+      position: relative;
+      display: inline-block;
+      text-shadow: 0 0 20px rgba(78, 255, 138, 0.3);
+    }
+
+    .randomizers-container {
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+
+    .randomizer-card {
+      background-color: var(--secondary-bg);
+      border-radius: 20px;
+      box-shadow: var(--dark-shadow);
+      padding: 30px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--card-border);
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .randomizer-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+      border-color: var(--accent-color);
+    }
+
+    .randomizer-card::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      right: -50%;
+      bottom: -50%;
+      background: linear-gradient(45deg, 
+        rgba(78, 255, 138, 0) 45%, 
+        rgba(78, 255, 138, 0.1) 50%, 
+        rgba(78, 255, 138, 0) 55%);
+      z-index: 1;
+      animation: shine 5s infinite;
+      pointer-events: none;
+    }
+
+    @keyframes shine {
+      0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+      100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+    }
+
+    .randomizer-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-color);
+      margin-bottom: 15px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .randomizer-description {
+      font-size: 16px;
+      line-height: 1.5;
+      color: var(--text-secondary);
+      margin-bottom: 25px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .randomizer-btn {
+      background: var(--button-bg);
+      color: var(--main-bg-color);
+      font-size: 16px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 14px 30px;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: var(--button-shadow);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+      text-decoration: none;
+      z-index: 2;
+    }
+
+    .randomizer-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 30px rgba(78, 255, 138, 0.4);
+    }
+
+    .randomizer-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 5px 15px rgba(78, 255, 138, 0.3);
+    }
+
+    .randomizer-btn::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.3) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      transform: rotate(45deg);
+      animation: shimmer 3s infinite;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .randomizer-btn span {
+      position: relative;
+      z-index: 2;
+    }
+
+    @keyframes shimmer {
+      0% { top: -150%; left: -150%; }
+      100% { top: 150%; left: 150%; }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .title {
+        font-size: 32px;
+      }
+      
+      .randomizer-title {
+        font-size: 20px;
+      }
+      
+      .randomizer-description {
+        font-size: 14px;
+      }
+      
+      .randomizer-btn {
+        font-size: 14px;
+        padding: 12px 25px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 class="title">Career Mode Randomizers</h1>
+    </div>
+    
+    <div class="randomizers-container">
+      <div class="randomizer-card">
+        <h2 class="randomizer-title">Career Mode Transfer Randomizer</h2>
+        <p class="randomizer-description">Generate random transfer challenges based on player age group, budget restrictions, and league. Perfect for adding a unique twist to your career mode experience.</p>
+        <a href="career-mode-randomizer.html" class="randomizer-btn"><span>OPEN RANDOMIZER</span></a>
+      </div>
+      
+      <div class="randomizer-card">
+        <h2 class="randomizer-title">Formation Randomizer</h2>
+        <p class="randomizer-description">Challenge yourself with random formations for your team. Test your tactical knowledge and adaptability with unexpected formations.</p>
+        <a href="formation_randomizer.html" class="randomizer-btn"><span>OPEN RANDOMIZER</span></a>
+      </div>
+      
+      <div class="randomizer-card">
+        <h2 class="randomizer-title">Transfer Amount Randomizer</h2>
+        <p class="randomizer-description">Randomize the number of transfers you're allowed to make in a window. Challenge yourself with limited transfer opportunities or go on a signing spree.</p>
+        <a href="transfer_amount_slot_v1.html" class="randomizer-btn"><span>OPEN RANDOMIZER</span></a>
+      </div>
+      
+      <div class="randomizer-card">
+        <h2 class="randomizer-title">Academy Randomizer</h2>
+        <p class="randomizer-description">Randomize your scouting experience by generating random countries and positions to search for youth talents. Discover hidden gems in unexpected places.</p>
+        <a href="academy-randomizer.html" class="randomizer-btn"><span>OPEN RANDOMIZER</span></a>
+      </div>
+      
+      <div class="randomizer-card">
+        <h2 class="randomizer-title">Playstyle Randomizer</h2>
+        <p class="randomizer-description">Get randomly generated playstyles to guide your transfer decisions. Build your squad around unexpected tactical approaches and player characteristics.</p>
+        <a href="playstyle-randomizer.html" class="randomizer-btn"><span>OPEN RANDOMIZER</span></a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
