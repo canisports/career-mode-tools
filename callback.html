@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Callback Test</title>
+</head>
+<body>
+  <h1>Callback Received</h1>
+  <p>This page is working!</p>
+  <script>
+    // Display the callback code from URL for testing
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    if (code) {
+      document.body.innerHTML += `<p>Code received: ${code}</p>`;
+    }
+  </script>
+</body>
+</html>
