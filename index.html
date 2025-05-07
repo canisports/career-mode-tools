@@ -206,11 +206,11 @@
   <script>
     // Check if user is already authenticated
     function checkAuth() {
-      // This is where you'd check for an existing auth token/cookie
-      // If authenticated, redirect to main page
+      // Check for authentication in localStorage
       const isAuthenticated = localStorage.getItem('patreonAuthenticated');
       if (isAuthenticated === 'true') {
-        window.location.href = 'index.html';
+        // Redirect to dashboard instead of index.html
+        window.location.href = 'dashboard.html';
       }
     }
     
