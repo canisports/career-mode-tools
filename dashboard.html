@@ -273,7 +273,7 @@
       <div class="randomizer-card">
         <h2 class="randomizer-title">Formation Randomizer</h2>
         <p class="randomizer-description">Challenge yourself with random formations for your team. Test your tactical knowledge and adaptability with unexpected formations.</p>
-        <a href="formation-randomizer.html" class="randomizer-btn"><span>OPEN RANDOMIZER</span></a>
+        <a href="formation_randomizer.html" class="randomizer-btn"><span>OPEN RANDOMIZER</span></a>
       </div>
       
       <div class="randomizer-card">
@@ -295,5 +295,44 @@
       </div>
     </div>
   </div>
+
+  <script>
+    // Add a check for the exact version of the formation randomizer file
+    document.addEventListener('DOMContentLoaded', function() {
+      // Get the formation randomizer link
+      const formationRandomizerLink = document.querySelector('a[href="formation_randomizer.html"]');
+      
+      // Function to check if a file exists
+      async function checkFileExists(url) {
+        try {
+          const response = await fetch(url, { method: 'HEAD' });
+          return response.ok;
+        } catch (error) {
+          return false;
+        }
+      }
+      
+      // Check if the underscore version exists, if not, try the hyphen version
+      async function checkFormationRandomizer() {
+        const underscoreVersion = 'formation_randomizer.html';
+        const hyphenVersion = 'formation-randomizer.html';
+        
+        const underscoreExists = await checkFileExists(underscoreVersion);
+        
+        if (!underscoreExists) {
+          const hyphenExists = await checkFileExists(hyphenVersion);
+          
+          if (hyphenExists) {
+            // Update the link to use the hyphen version
+            formationRandomizerLink.href = hyphenVersion;
+            console.log('Updated to use hyphen version of formation randomizer');
+          }
+        }
+      }
+      
+      // Run the check
+      checkFormationRandomizer();
+    });
+  </script>
 </body>
 </html>
