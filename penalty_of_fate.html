@@ -585,21 +585,21 @@
       </div>
     </div>
     
-    <!-- Audio elements for sound effects -->
-    <audio id="shootSound">
-      <source src="https://cdn.freesound.org/previews/588/588048_1648170-lq.mp3" type="audio/mpeg">
+    <!-- Audio elements for sound effects - direct MP3 links for better compatibility -->
+    <audio id="shootSound" preload="auto">
+      <source src="https://bigsoundbank.com/UPLOAD/mp3/1482.mp3" type="audio/mpeg">
     </audio>
-    <audio id="saveSound">
-      <source src="https://cdn.freesound.org/previews/344/344438_4766646-lq.mp3" type="audio/mpeg">
+    <audio id="saveSound" preload="auto">
+      <source src="https://bigsoundbank.com/UPLOAD/mp3/0899.mp3" type="audio/mpeg">
     </audio>
-    <audio id="goalSound">
-      <source src="https://cdn.freesound.org/previews/350/350428_6456822-lq.mp3" type="audio/mpeg">
+    <audio id="goalSound" preload="auto">
+      <source src="https://bigsoundbank.com/UPLOAD/mp3/1608.mp3" type="audio/mpeg">
     </audio>
-    <audio id="successSound">
-      <source src="https://cdn.freesound.org/previews/270/270404_5123851-lq.mp3" type="audio/mpeg">
+    <audio id="successSound" preload="auto">
+      <source src="https://bigsoundbank.com/UPLOAD/mp3/1111.mp3" type="audio/mpeg">
     </audio>
-    <audio id="failureSound">
-      <source src="https://cdn.freesound.org/previews/381/381382_3905081-lq.mp3" type="audio/mpeg">
+    <audio id="failureSound" preload="auto">
+      <source src="https://bigsoundbank.com/UPLOAD/mp3/0530.mp3" type="audio/mpeg">
     </audio>
   </div>
 
@@ -638,18 +638,40 @@
       try {
         const sound = document.getElementById(soundId);
         if (sound) {
+          // Set volume to make it louder
+          sound.volume = 1.0;
+          
           // Make sure the audio is ready to play and has loaded
+          if (sound.readyState < 2) {
+            sound.load();
+          }
+          
+          // Reset to beginning
           sound.currentTime = 0;
+          
+          // Force pause and reset before playing (helps with some browsers)
+          sound.pause();
           
           // Create a promise to play the sound
           const playPromise = sound.play();
           
           // Handle the promise to catch any errors
           if (playPromise !== undefined) {
-            playPromise.catch(error => {
-              console.log("Audio play error:", error.message);
+            playPromise.then(() => {
+              console.log(`${soundId} played successfully`);
+            }).catch(error => {
+              console.log(`Audio play error for ${soundId}:`, error.message);
+              
+              // Try playing again after a small delay as a fallback
+              setTimeout(() => {
+                sound.play().catch(e => {
+                  console.log(`Second attempt to play ${soundId} failed:`, e.message);
+                });
+              }, 100);
             });
           }
+        } else {
+          console.log(`Sound element ${soundId} not found`);
         }
       } catch (error) {
         console.log("Error playing sound:", error.message);
@@ -732,13 +754,14 @@
     function handleZoneClick(event) {
       if (!gameActive) return;
       
-      // Play shoot sound
-      playSound('shootSound');
-      
       // Get selected zone
       const zone = event.currentTarget;
       const zoneChoice = zone.getAttribute('data-zone');
       playerChoice = zoneChoice;
+      
+      // Immediately play shoot sound
+      playSound('shootSound');
+      console.log("Playing shoot sound");
       
       // Highlight selected zone
       zone.style.backgroundColor = 'rgba(78, 255, 138, 0.3)';
@@ -777,14 +800,20 @@
       // Disable game interaction
       gameActive = false;
       
-      // Show result after animation
+      // Show result after animation - Give time for ball to travel
       setTimeout(() => {
         if (isSaved) {
-          // Play save sound
-          playSound('saveSound');
+          // Play save sound - Make it louder
+          let saveAudio = document.getElementById('saveSound');
+          if (saveAudio) {
+            saveAudio.volume = 1.0;
+            console.log("Playing save sound");
+            playSound('saveSound');
+          }
           
-          // Slight delay before playing the result sound
+          // Slight delay before playing the failure result sound
           setTimeout(() => {
+            console.log("Playing failure sound");
             playSound('failureSound');
           }, 300);
           
@@ -801,10 +830,12 @@
           document.querySelector('.instruction').style.color = 'var(--danger-color)';
         } else {
           // Play goal sound
+          console.log("Playing goal sound");
           playSound('goalSound');
           
-          // Slight delay before playing the result sound
+          // Slight delay before playing the success result sound
           setTimeout(() => {
+            console.log("Playing success sound");
             playSound('successSound');
           }, 300);
           
@@ -816,7 +847,7 @@
           document.querySelector('.instruction').textContent = "You scored! Your squad remains intact.";
           document.querySelector('.instruction').style.color = 'var(--accent-color)';
         }
-      }, 700);
+      }, 600);
     }
     
     // Initialize event listeners
