@@ -585,21 +585,9 @@
       </div>
     </div>
     
-    <!-- Audio elements for sound effects - direct MP3 links for better compatibility -->
-    <audio id="shootSound" preload="auto">
-      <source src="https://bigsoundbank.com/UPLOAD/mp3/1482.mp3" type="audio/mpeg">
-    </audio>
-    <audio id="saveSound" preload="auto">
-      <source src="https://bigsoundbank.com/UPLOAD/mp3/0899.mp3" type="audio/mpeg">
-    </audio>
-    <audio id="goalSound" preload="auto">
-      <source src="https://bigsoundbank.com/UPLOAD/mp3/1608.mp3" type="audio/mpeg">
-    </audio>
-    <audio id="successSound" preload="auto">
-      <source src="https://bigsoundbank.com/UPLOAD/mp3/1111.mp3" type="audio/mpeg">
-    </audio>
-    <audio id="failureSound" preload="auto">
-      <source src="https://bigsoundbank.com/UPLOAD/mp3/0530.mp3" type="audio/mpeg">
+    <!-- Single audio element for the kick sound -->
+    <audio id="kickSound" preload="auto">
+      <source src="https://bigsoundbank.com/UPLOAD/mp3/0977.mp3" type="audio/mpeg">
     </audio>
   </div>
 
@@ -680,34 +668,24 @@
     
     // Function to preload all audio
     function preloadAudio() {
-      const sounds = [
-        'shootSound',
-        'saveSound',
-        'goalSound',
-        'successSound',
-        'failureSound'
-      ];
-      
-      sounds.forEach(soundId => {
-        try {
-          const sound = document.getElementById(soundId);
-          if (sound) {
-            // Add event listeners to monitor loading status
-            sound.addEventListener('canplaythrough', () => {
-              console.log(`${soundId} loaded and ready to play`);
-            });
-            
-            sound.addEventListener('error', (error) => {
-              console.error(`Error loading ${soundId}:`, error);
-            });
-            
-            // Try to load the audio
-            sound.load();
-          }
-        } catch (e) {
-          console.error(`Error preloading ${soundId}:`, e);
+      try {
+        const kickSound = document.getElementById('kickSound');
+        if (kickSound) {
+          // Add event listener to monitor loading status
+          kickSound.addEventListener('canplaythrough', () => {
+            console.log(`Kick sound loaded and ready to play`);
+          });
+          
+          kickSound.addEventListener('error', (error) => {
+            console.error(`Error loading kick sound:`, error);
+          });
+          
+          // Try to load the audio
+          kickSound.load();
         }
-      });
+      } catch (e) {
+        console.error(`Error preloading kick sound:`, e);
+      }
     }
     
     // Initialize the game
@@ -759,9 +737,8 @@
       const zoneChoice = zone.getAttribute('data-zone');
       playerChoice = zoneChoice;
       
-      // Immediately play shoot sound
-      playSound('shootSound');
-      console.log("Playing shoot sound");
+      // Play kick sound
+      playSound('kickSound');
       
       // Highlight selected zone
       zone.style.backgroundColor = 'rgba(78, 255, 138, 0.3)';
@@ -803,20 +780,6 @@
       // Show result after animation - Give time for ball to travel
       setTimeout(() => {
         if (isSaved) {
-          // Play save sound - Make it louder
-          let saveAudio = document.getElementById('saveSound');
-          if (saveAudio) {
-            saveAudio.volume = 1.0;
-            console.log("Playing save sound");
-            playSound('saveSound');
-          }
-          
-          // Slight delay before playing the failure result sound
-          setTimeout(() => {
-            console.log("Playing failure sound");
-            playSound('failureSound');
-          }, 300);
-          
           // Ball was saved - danger outcome
           const randomIndex = Math.floor(Math.random() * dangerOutcomes.length);
           const outcomeText = dangerOutcomes[randomIndex];
@@ -829,16 +792,6 @@
           document.querySelector('.instruction').textContent = "Bad luck! You must sacrifice a player.";
           document.querySelector('.instruction').style.color = 'var(--danger-color)';
         } else {
-          // Play goal sound
-          console.log("Playing goal sound");
-          playSound('goalSound');
-          
-          // Slight delay before playing the success result sound
-          setTimeout(() => {
-            console.log("Playing success sound");
-            playSound('successSound');
-          }, 300);
-          
           // Goal scored - safe outcome
           centerResult.textContent = "GOAL! SAFE!";
           centerResult.classList.add('safe', 'visible');
